@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="ja">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -40,7 +40,7 @@
         var div = document.createElement('div');
         div.innerHTML = msg;
         warningBanner.appendChild(div);
-        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        if (type == 'error') div.style = 'background: #c00; color: #fff; padding: 12px; font: 14px sans-serif; word-break: break-all; position: relative; z-index: 9999;';
         else {
           if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
           setTimeout(function() {
@@ -51,13 +51,16 @@
         updateBannerVisibility();
       }
 
+      window.addEventListener("error", function (e) { unityShowBanner("エラー: " + (e.message || e) + (e.filename ? " @ " + e.filename + ":" + e.lineno : ""), "error"); });
+      window.addEventListener("unhandledrejection", function (e) { unityShowBanner("エラー: " + (e.reason && (e.reason.message || e.reason)), "error"); });
+      if (!document.createElement("canvas").getContext("webgl2")) unityShowBanner("この端末/ブラウザは WebGL 2 に対応していません（iOS 15 以降が必要）", "error");
       var buildUrl = ".";
-      var loaderUrl = buildUrl + "/webgl-pages.loader.js";
+      var loaderUrl = buildUrl + "/manin.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/webgl-pages.data.unityweb",
-        frameworkUrl: buildUrl + "/webgl-pages.framework.js.unityweb",
-        codeUrl: buildUrl + "/webgl-pages.wasm.unityweb",
+        dataUrl: buildUrl + "/manin.data",
+        frameworkUrl: buildUrl + "/manin.framework.js",
+        codeUrl: buildUrl + "/manin.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "ManinDensha",
         productName: "満員電車パズル",
@@ -99,7 +102,7 @@
 
         // To lower canvas resolution on mobile devices to gain some
         // performance, uncomment the following line:
-        config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
 
 
       } else {
@@ -112,6 +115,7 @@
 
       var script = document.createElement("script");
       script.src = loaderUrl;
+      script.onerror = () => unityShowBanner("ローダーの読み込みに失敗: " + loaderUrl, "error");
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
@@ -122,7 +126,7 @@
                 };
 
               }).catch((message) => {
-                alert(message);
+                unityShowBanner("読み込みエラー: " + message, "error");
               });
             };
 
